@@ -15,6 +15,8 @@ export function registerBorderWrappers() {
 			/** @type boolean **/
 			const token_hide_border = this.document.getFlag("hex-size-support", "hideBorder");
 
+			if (always_show) options.hover = true;
+			
 			this.border.clear();
 			if (!this.isVisible || token_hide_border) return;
 			const borderColor = this._getBorderColor(options);
