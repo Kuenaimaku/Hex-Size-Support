@@ -197,7 +197,9 @@ function flipControlledTokens() {
 			),
 		};
 	});
-	canvas.scene?.updateEmbeddedDocuments("Token", updates);
+	canvas.scene?.updateEmbeddedDocuments("Token", updates).then(() => {
+		canvas.tokens?.controlled.forEach(t => t.draw());
+	});
 }
 
 /**
