@@ -214,9 +214,9 @@ class HSSHexagonalGrid extends HexagonalGrid {
 		const shift_val = Math.floor((token_size + alt_shape - 1) / 2) % 2;
 		if (this.columnar) y += (shift_val * this.h) / 2;
 		else x += (shift_val * this.w) / 2;
-		const [r0, c0] = this._getGridPositionFromPixels(x, y, "round");
-		let [x0, y0] = this.getPixelsFromGridPosition(r0, c0);
-		[x0, y0] = this._adjustSnapForTokenSize(x0, y0, token);
+		const offset = HexagonalGrid.pixelsToOffset({x,y}, this.options, "round");
+		const point = HexagonalGrid.offsetToPixels(offset, this.options);
+		const [x0, y0] = this._adjustSnapForTokenSize(point.x, point.y, token);
 		return { x: x0, y: y0 };
 	}
 }
