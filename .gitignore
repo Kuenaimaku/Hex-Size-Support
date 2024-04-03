@@ -1,5 +1,7 @@
 # Jetbrains IDE files
 .idea/**
+client
+common
 
 node_modules
 dist

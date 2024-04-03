@@ -1,6 +1,10 @@
 {
-  "compilerOptions": {
-    "target": "es13",
-    "types": ["@league-of-foundry-developers/foundry-vtt-types"]
-  }
+	"compilerOptions": {
+		"module": "es2022",
+		"target": "ES2022",
+		"moduleResolution": "bundler",
+		"skipLibCheck": true
+	},
+	"exclude": ["node_modules", "dist"],
+	"include": ["src", "client", "common"]
 }

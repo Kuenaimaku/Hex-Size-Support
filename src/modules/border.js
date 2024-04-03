@@ -11,16 +11,12 @@ export function registerBorderWrappers() {
 			/** @type boolean */
 			const fill_border = game.settings.get("hex-size-support", "fillBorder");
 			const options = {};
-			
-			/** @type boolean **/
-			const token_hide_border = this.document.getFlag("hex-size-support", "hideBorder");
 
 			if (always_show) options.hover = true;
-			
+
 			this.border.clear();
-			if (!this.isVisible || token_hide_border) return;
 			const borderColor = this._getBorderColor(options);
-			if (borderColor == null) return;
+			if (!borderColor) return;
 
 			const t = CONFIG.Canvas.objectBorderThickness;
 			this.border.position.set(this.document.x, this.document.y);
@@ -57,6 +53,29 @@ export function registerBorderWrappers() {
 			if (fill_border) {
 				this.border.beginFill(borderColor, 0.3).drawRoundedRect(0, 0, this.w, this.h, 3);
 			}
+		},
+		"OVERRIDE"
+	);
+
+	libWrapper.register(
+		"hex-size-support",
+		"Token.prototype._refreshVisibility",
+		/** @this Token */
+		function () {
+			this.visible = this.isVisible;
+
+			/** @type boolean */
+			const always_show = game.settings.get("hex-size-support", "alwaysShowBorder");
+			/** @type boolean **/
+			const token_hide_border = this.document.getFlag("hex-size-support", "hideBorder");
+
+			if (this.border)
+				this.border.visible =
+					!token_hide_border &&
+					this.visible &&
+					this.renderable &&
+					(always_show || this.controlled || this.hover || this.layer.highlightObjects) &&
+					!(this.document.disposition === CONST.TOKEN_DISPOSITIONS.SECRET && !this.isOwner);
 		},
 		"OVERRIDE"
 	);
