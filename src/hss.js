@@ -1,13 +1,12 @@
 import { registerSettings, renderSettingsConfig } from "./modules/settings";
 import { hitAreaDraw, hitAreaUpdate, pivotToken } from "./modules/hitarea";
 import { registerBorderWrappers, moveBorderLayer } from "./modules/border";
-import { registerGridWrapper, extendHexBorders, isAltOrientation } from "./modules/grid";
+import { isAltOrientation } from "./modules/grid";
 import { extendTokenConfig } from "./modules/token-config";
 
 Hooks.once("init", () => {
 	console.log("hex-size-support | Initializing module");
 	registerSettings();
-	extendHexBorders();
 	const API = {
 		isAltOrientation,
 	};
@@ -16,7 +15,6 @@ Hooks.once("init", () => {
 
 Hooks.once("libWrapper.Ready", () => {
 	registerBorderWrappers();
-	registerGridWrapper();
 });
 
 Hooks.on("drawToken", hitAreaDraw);
