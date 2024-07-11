@@ -5,9 +5,9 @@ export function registerBorderWrappers() {
 		"Token.prototype.getShape",
 		/** @this {Token} */
 		function (wrapped) {
-			if (canvas.grid.isGridless) {
-				const size = this.getSize();
-				return new PIXI.Ellipse(size.width / 2, size.height / 2, size.width / 2, size.height / 2);
+			const size = this.getSize();
+			if (canvas.grid.isGridless && size.width === size.height) {
+				return new PIXI.Circle(size.width / 2, size.height / 2, size.width / 2);
 			}
 			return wrapped();
 		},
