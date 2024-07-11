@@ -1,4 +1,4 @@
-import { registerSettings, renderSettingsConfig } from "./modules/settings";
+import { registerSettings } from "./modules/settings";
 import { registerBorderWrappers } from "./modules/border";
 import { isAltOrientation } from "./modules/grid";
 import { extendTokenConfig } from "./modules/token-config";
@@ -16,5 +16,4 @@ Hooks.once("libWrapper.Ready", () => {
 	registerBorderWrappers();
 });
 
-Hooks.on("renderSettingsConfig", renderSettingsConfig);
 Hooks.on("renderTokenConfig", extendTokenConfig);
