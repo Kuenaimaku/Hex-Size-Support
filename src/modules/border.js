@@ -80,12 +80,3 @@ export function registerBorderWrappers() {
 		"OVERRIDE"
 	);
 }
-
-export function moveBorderLayer() {
-	/** @type boolean */
-	const border_below = game.settings.get("hex-size-support", "borderBehindToken");
-	if (border_below) return;
-	const borders = canvas.grid.borders;
-	canvas.grid.removeChild(borders);
-	canvas.tokens.addChild(borders);
-}
