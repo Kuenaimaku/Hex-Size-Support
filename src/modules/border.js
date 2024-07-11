@@ -1,82 +1,63 @@
-import { isAltOrientation } from "./grid";
-
 export function registerBorderWrappers() {
+	// Make gridless tokens round
 	libWrapper.register(
 		"hex-size-support",
-		"Token.prototype._refreshBorder",
-		/** @this Token */
-		function () {
-			/** @type boolean */
-			const always_show = game.settings.get("hex-size-support", "alwaysShowBorder");
-			/** @type boolean */
-			const fill_border = game.settings.get("hex-size-support", "fillBorder");
-			const options = {};
-
-			if (always_show) options.hover = true;
-
-			this.border.clear();
-			const borderColor = this._getBorderColor(options);
-			if (!borderColor) return;
-
-			const t = CONFIG.Canvas.objectBorderThickness;
-			this.border.position.set(this.document.x, this.document.y);
-
-			// Draw Hex border for size 1 tokens on a hex grid
-			if (canvas.grid.isHex) {
-				const polygon = isAltOrientation(this)
-					? canvas.grid.grid.getAltBorderPolygon(this.document.width, this.document.height, t)
-					: canvas.grid.grid.getBorderPolygon(this.document.width, this.document.height, t);
-				if (polygon) {
-					this.border.lineStyle(t, 0x000000, 0.8).drawPolygon(polygon);
-					this.border.lineStyle(t / 2, borderColor, 1.0).drawPolygon(polygon);
-					if (fill_border) this.border.beginFill(borderColor, 0.3).drawPolygon(polygon);
-					return;
-				}
-			} else if (
-				canvas.grid.type === CONST.GRID_TYPES.GRIDLESS &&
-				this.document.width === this.document.height
-			) {
-				this.border.lineStyle(t, 0x000000, 0.8).drawCircle(this.w / 2, this.h / 2, this.w / 2);
-				this.border
-					.lineStyle(t / 2, borderColor, 1.0)
-					.drawCircle(this.w / 2, this.h / 2, this.w / 2);
-				if (fill_border)
-					this.border.beginFill(borderColor, 0.3).drawCircle(this.w / 2, this.h / 2, this.w / 2);
-				return;
+		"Token.prototype.getShape",
+		/** @this {Token} */
+		function (wrapped) {
+			if (canvas.grid.isGridless) {
+				const size = this.getSize();
+				return new PIXI.Ellipse(size.width / 2, size.height / 2, size.width / 2, size.height / 2);
 			}
-
-			// Otherwise, draw square border
-			const h = Math.round(t / 2);
-			const o = Math.round(h / 2);
-			this.border.lineStyle(t, 0x000000, 0.8).drawRoundedRect(-o, -o, this.w + h, this.h + h, 3);
-			this.border.lineStyle(h, borderColor, 1.0).drawRoundedRect(-o, -o, this.w + h, this.h + h, 3);
-			if (fill_border) {
-				this.border.beginFill(borderColor, 0.3).drawRoundedRect(0, 0, this.w, this.h, 3);
-			}
+			return wrapped();
 		},
-		"OVERRIDE"
+		"MIXED"
 	);
 
 	libWrapper.register(
 		"hex-size-support",
-		"Token.prototype._refreshVisibility",
-		/** @this Token */
-		function () {
-			this.visible = this.isVisible;
-
-			/** @type boolean */
-			const always_show = game.settings.get("hex-size-support", "alwaysShowBorder");
-			/** @type boolean **/
-			const token_hide_border = this.document.getFlag("hex-size-support", "hideBorder");
-
-			if (this.border)
-				this.border.visible =
-					!token_hide_border &&
-					this.visible &&
-					this.renderable &&
-					(always_show || this.controlled || this.hover || this.layer.highlightObjects) &&
-					!(this.document.disposition === CONST.TOKEN_DISPOSITIONS.SECRET && !this.isOwner);
+		"Token.prototype._refreshState",
+		/** @this {Token} */
+		function (wrapped) {
+			/** @type {boolean} */
+			const hideBorder = this.document.getFlag("hex-size-support", "hideBorder");
+			wrapped();
+			const secret = this.document.disposition !== CONST.TOKEN_DISPOSITIONS.SECRET;
+			if (this.hover && game.settings.get("hex-size-support", "borderBehindToken")) {
+				this.addChildAt(this.voidMesh, this.getChildIndex(this.border) + 1);
+				this.zIndex = this.mesh.zIndex = 2;
+			}
+			if (game.settings.get("hex-size-support", "alwaysShowBorder")) {
+				this.border.visible = !this.document.isSecret;
+			}
+			this.borderFill.visible = !this.document.isSecret;
+			this.borderFill.tint = this.border.tint;
+			if (hideBorder) this.border.visible = this.borderFill.visible = false;
 		},
-		"OVERRIDE"
+		"WRAPPER"
+	);
+
+	// Add layer for border fill
+	libWrapper.register(
+		"hex-size-support",
+		"Token.prototype._draw",
+		/** @this {Token} */
+		function (wrapped, options) {
+			wrapped(options);
+			this.borderFill ||= this.addChild(new PIXI.Graphics());
+		},
+		"WRAPPER"
+	);
+	libWrapper.register(
+		"hex-size-support",
+		"Token.prototype._refreshBorder",
+		function (wrapped) {
+			wrapped();
+			if (!game.settings.get("hex-size-support", "fillBorder")) return;
+			this.borderFill.clear();
+			this.borderFill.beginFill(0xffffff, 0.3);
+			this.borderFill.drawShape(this.shape);
+		},
+		"WRAPPER"
 	);
 }
