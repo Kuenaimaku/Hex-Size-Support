@@ -42,9 +42,9 @@ export function registerBorderWrappers() {
 		"hex-size-support",
 		"Token.prototype._draw",
 		/** @this {Token} */
-		function (wrapped, options) {
-			wrapped(options);
-			this.borderFill ||= this.addChild(new PIXI.Graphics());
+		async function (wrapped, options) {
+			await wrapped(options);
+			this.borderFill ||= this.addChildAt(new PIXI.Graphics(), 0);
 		},
 		"WRAPPER"
 	);
