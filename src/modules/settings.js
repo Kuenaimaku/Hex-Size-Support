@@ -13,23 +13,13 @@ export function registerSettings() {
 		onChange: canvasRedraw,
 	});
 
-	game.settings.register("hex-size-support", "altOrientationDefault", {
-		name: "hex-size-support.settings.altOrientationDefault.name",
-		hint: "hex-size-support.settings.altOrientationDefault.hint",
-		scope: "world",
-		type: Boolean,
-		config: true,
-		default: false,
-		onChange: canvasRedraw,
-	});
-
 	game.settings.register("hex-size-support", "borderWidth", {
 		name: "hex-size-support.settings.borderWidth.name",
 		hint: "hex-size-support.settings.borderWidth.hint",
 		scope: "world",
 		type: Number,
 		config: true,
-		default: 2,
+		default: CONFIG.Canvas.objectBorderThickness,
 		range: {
 			min: 1,
 			max: 20,
@@ -67,10 +57,13 @@ export function registerSettings() {
 	 */
 
 	game.settings.register("hex-size-support", "controlledColor", {
-		name: "hex-size-support.settings.controlledColor.name",
 		scope: "client",
-		type: String,
-		default: "#FF9829",
+		name: "hex-size-support.settings.controlledColor.name",
+		type: new foundry.data.fields.ColorField({
+			required: true,
+			blank: false,
+			initial: "#FF9829",
+		}),
 		config: true,
 		onChange: val => {
 			CONFIG.Canvas.dispositionColors.CONTROLLED = parseInt(val.substr(1), 16);
@@ -83,10 +76,13 @@ export function registerSettings() {
 	);
 
 	game.settings.register("hex-size-support", "partyColor", {
-		name: "hex-size-support.settings.partyColor.name",
 		scope: "client",
-		type: String,
-		default: "#0A7AB2",
+		name: "hex-size-support.settings.partyColor.name",
+		type: new foundry.data.fields.ColorField({
+			required: true,
+			blank: false,
+			initial: "#0A7AB2",
+		}),
 		config: true,
 		onChange: val => {
 			CONFIG.Canvas.dispositionColors.PARTY = parseInt(val.substr(1), 16);
@@ -101,8 +97,11 @@ export function registerSettings() {
 	game.settings.register("hex-size-support", "friendlyColor", {
 		name: "hex-size-support.settings.friendlyColor.name",
 		scope: "client",
-		type: String,
-		default: "#0A7AB2",
+		type: new foundry.data.fields.ColorField({
+			required: true,
+			blank: false,
+			initial: "#0A7AB2",
+		}),
 		config: true,
 		onChange: val => {
 			CONFIG.Canvas.dispositionColors.FRIENDLY = parseInt(val.substr(1), 16);
@@ -117,8 +116,11 @@ export function registerSettings() {
 	game.settings.register("hex-size-support", "neutralColor", {
 		name: "hex-size-support.settings.neutralColor.name",
 		scope: "client",
-		type: String,
-		default: "#F1D836",
+		type: new foundry.data.fields.ColorField({
+			required: true,
+			blank: false,
+			initial: "#F1D836",
+		}),
 		config: true,
 		onChange: val => {
 			CONFIG.Canvas.dispositionColors.NEUTRAL = parseInt(val.substr(1), 16);
@@ -133,8 +135,11 @@ export function registerSettings() {
 	game.settings.register("hex-size-support", "hostileColor", {
 		name: "hex-size-support.settings.hostileColor.name",
 		scope: "client",
-		type: String,
-		default: "#E72124",
+		type: new foundry.data.fields.ColorField({
+			required: true,
+			blank: false,
+			initial: "#E72124",
+		}),
 		config: true,
 		onChange: val => {
 			CONFIG.Canvas.dispositionColors.HOSTILE = parseInt(val.substr(1), 16);
@@ -157,44 +162,13 @@ export function registerSettings() {
 }
 
 /**
- * @param {SettingsConfig} _app
- * @param {JQuery<HTMLElement>} el
- */
-export function renderSettingsConfig(_app, el) {
-	let nC = game.settings.get("hex-size-support", "neutralColor");
-	let fC = game.settings.get("hex-size-support", "friendlyColor");
-	let hC = game.settings.get("hex-size-support", "hostileColor");
-	let pC = game.settings.get("hex-size-support", "partyColor");
-	let cC = game.settings.get("hex-size-support", "controlledColor");
-
-	el.find('[name="hex-size-support.controlledColor"]')
-		.parent()
-		.append(`<input type="color"value="${cC}" data-edit="hex-size-support.controlledColor">`);
-	el.find('[name="hex-size-support.partyColor"]')
-		.parent()
-		.append(`<input type="color" value="${pC}" data-edit="hex-size-support.partyColor">`);
-	el.find('[name="hex-size-support.friendlyColor"]')
-		.parent()
-		.append(`<input type="color" value="${fC}" data-edit="hex-size-support.friendlyColor">`);
-	el.find('[name="hex-size-support.neutralColor"]')
-		.parent()
-		.append(`<input type="color" value="${nC}" data-edit="hex-size-support.neutralColor">`);
-	el.find('[name="hex-size-support.hostileColor"]')
-		.parent()
-		.append(`<input type="color" value="${hC}" data-edit="hex-size-support.hostileColor">`);
-}
-
-/**
  * Toggle the orientation flag on all controlled tokens
  */
 function flipControlledTokens() {
 	const updates = canvas.tokens?.controlled.map(t => {
 		return {
 			_id: t.document.id,
-			"flags.hex-size-support.alternateOrientation": !t.document.getFlag(
-				"hex-size-support",
-				"alternateOrientation"
-			),
+			hexagonalShape: t.document.hexagonalShape ^ 1,
 		};
 	});
 	canvas.scene?.updateEmbeddedDocuments("Token", updates).then(() => {

@@ -17,6 +17,7 @@ export function hitAreaDraw(token) {
 
 /** @param {TokenDocument} token */
 export function hitAreaUpdate(token, data) {
+	if (!token?.object) return;
 	if (
 		!["width", "height", "texture.scaleX", "texture.scaleY"].some(k => Object.hasOwn(data, k)) &&
 		foundry.utils.getProperty(data, "flags.hex-size-support.alternateOrientation") == null
